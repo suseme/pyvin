@@ -4,4 +4,5 @@ from .callbacks import Callbacks
 from .commanding import Commading
 from .sqlitehelp import SqliteHelp
 from .processor import Processor
+from .log import Log
 
