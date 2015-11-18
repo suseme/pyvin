@@ -1,7 +1,7 @@
 __author__ = 'vin@misday.com'
 
 import wx, webbrowser
-from vincore import Callbacks
+from pyvin.core import Callbacks
 
 (IDX_LABEL, IDX_HELP, IDX_ID, IDX_BITMAP, IDX_KIND, IDX_HANDLER, IDX_ID2) = range(0, 7)
 
