@@ -1,8 +1,10 @@
 __author__ = 'vin@misday.com'
 
+import Queue
 import threading
 import time
 from .callbacks import Callbacks
+from .log import Log
 
 class Processor(threading.Thread, Callbacks):
     (EVT_START, EVT_STOP, EVT_LOOP) = range(1, 4)
@@ -32,3 +34,18 @@ class Processor(threading.Thread, Callbacks):
 
     def stop(self):
         self.running = False
+
+    ###############################################################
+    def initMsgQ(self):
+        self.queue = Queue.Queue()
+
+    def recvMsg(self, block=True, timeout=None):
+        try:
+            msg = self.queue.get(block, timeout)
+        except:
+            msg = None
+            # Log.e(Processor.__name__, 'recv msg failed')
+        return msg
+
+    def sendMsgTo(self, msg):
+        self.queue.put(msg)

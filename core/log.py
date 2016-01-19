@@ -4,21 +4,21 @@ from pyvin.core import Callbacks
 
 class Log(Callbacks):
     @staticmethod
-    def d(str):
-        print 'D: %s' % (str, )
+    def d(tag, msg):
+        print 'D: [%s] %s' % (tag, msg)
 
     @staticmethod
-    def v(str):
-        print 'V: %s' % (str, )
+    def v(tag, msg):
+        print 'V: [%s] %s' % (tag, msg)
 
     @staticmethod
-    def i(str):
-        print 'I: %s' % (str, )
+    def i(tag, msg):
+        print 'I: [%s] %s' % (tag, msg)
 
     @staticmethod
-    def w(str):
-        print 'W: %s' % (str, )
+    def w(tag, msg):
+        print 'W: [%s] %s' % (tag, msg)
 
     @staticmethod
-    def e(str):
-        print 'E: %s' % (str, )
+    def e(tag, msg):
+        print 'E: [%s] %s' % (tag, msg)

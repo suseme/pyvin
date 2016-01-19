@@ -1,3 +1,3 @@
 __author__ = 'vin@misday.com'
 
-__all__ = ['core', 'ux', 'spider', 'android']
+__all__ = ['core', 'ux', 'qt', 'spider', 'android']
