@@ -47,5 +47,5 @@ class Processor(threading.Thread, Callbacks):
             # Log.e(Processor.__name__, 'recv msg failed')
         return msg
 
-    def sendMsgTo(self, msg):
+    def sendMsgToSelf(self, msg):
         self.queue.put(msg)
