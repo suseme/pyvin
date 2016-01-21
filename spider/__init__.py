@@ -77,7 +77,7 @@ class Fetch:
         if sysstr == 'Linux':
             os.system('cp -a %s/* %s/' % (src, dst))
         elif sysstr == 'Windows':
-            os.system('xcopy /s/e/a/q %s\\* %s\\' % (src, dst))
+            os.system('xcopy /s/e/a/q/y %s\\* %s\\' % (src, dst))
 
 class Spider(Processor):
     todo = []
