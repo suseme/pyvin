@@ -3,6 +3,7 @@ __author__ = 'vin@misday.com'
 import os, sys, urllib, codecs, traceback, platform
 from datetime import *
 from pyvin.core import Processor
+import bs4
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -199,6 +200,21 @@ class SpiderSoup:
             # print '%s %d' % (node, len(tags))
             for tag in tags:
                 tag.extract()
+
+    @staticmethod
+    def clearAttr(soup, attrs, tag, att={}):
+        tags = soup.findAll(tag, attrs=att)
+        if tags:
+            # print '%s %d' % (node, len(tags))
+            for tag in tags:
+                for attr in attrs:
+                    del(tag[attr])
+
+    @staticmethod
+    def clearComments(soup):
+        for child in soup.children:
+            if isinstance(child, bs4.Comment):
+                child.extract()
 
     @staticmethod
     def insertCss(soup, url):
