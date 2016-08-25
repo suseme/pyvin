@@ -1,6 +1,7 @@
 __author__ = 'vin@misday.com'
 
 import os, sys, urllib, codecs, traceback, platform
+import urllib2
 from datetime import *
 from pyvin.core import Processor
 import bs4
@@ -22,17 +23,30 @@ class Fetch:
         self.proxy = {'http' : self.proxy_config}
         print 'using proxy: %s' % (self.proxy_config)
 
-    def get(self, url):
-        print '<%s GET %s>' % (get_timestamp(), url)
-
+    def get2(self, url):
+        print '<%s GET2 %s>' % (get_timestamp(), url),
         try:
-            wp = urllib.urlopen(url, proxies=self.proxy)
-            response = wp.read();
+            request = urllib2.Request(url)
+            request.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.75 Safari/537.36')
+            reader= urllib2.urlopen(request)
+            response = reader.read()
+            print ' done'
         except:
-            print 'failed...'
+            print ' failed...'
             traceback.print_exc()
             response = ''
+        return response
 
+    def get(self, url):
+        print '<%s GET %s>' % (get_timestamp(), url)
+        try:
+            wp = urllib.urlopen(url, proxies=self.proxy)
+            response = wp.read()
+            print ' done'
+        except:
+            print ' failed...'
+            traceback.print_exc()
+            response = ''
         return response
 
     def retrieveFile(self, url, filename):
