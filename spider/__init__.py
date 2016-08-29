@@ -9,6 +9,8 @@ import bs4
 reload(sys)
 sys.setdefaultencoding('utf8')
 
+sysstr = platform.system()
+
 def get_timestamp():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
@@ -24,48 +26,48 @@ class Fetch:
         print 'using proxy: %s' % (self.proxy_config)
 
     def get2(self, url):
-        print '<%s GET2 %s>' % (get_timestamp(), url),
+        print '<%s GET2 %s>... ' % (get_timestamp(), url),
         try:
             request = urllib2.Request(url)
             request.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.75 Safari/537.36')
             reader= urllib2.urlopen(request)
             response = reader.read()
-            print ' done'
+            print 'OK'
         except:
-            print ' failed...'
+            print 'failed'
             traceback.print_exc()
             response = ''
         return response
 
     def get(self, url):
-        print '<%s GET %s>' % (get_timestamp(), url)
+        print '<%s GET %s>... ' % (get_timestamp(), url),
         try:
             wp = urllib.urlopen(url, proxies=self.proxy)
             response = wp.read()
-            print ' done'
+            print 'OK'
         except:
-            print ' failed...'
+            print 'failed'
             traceback.print_exc()
             response = ''
         return response
 
     def retrieveFile(self, url, filename):
-        print '<%s RETRIEVE %s --> %s>' % (get_timestamp(), url, filename)
+        print '<%s RETRIEVE %s --> %s>... ' % (get_timestamp(), url, filename),
         if os.path.exists(filename):
-            print 'exist...'
+            print 'exist'
             return
         try:
             urllib.URLopener(self.proxy).retrieve(url, filename)
+            print 'OK'
         except:
-            print 'failed...'
+            print 'failed'
             traceback.print_exc()
 
     def wget(self, url, filename):
-        print '<%s DOWNLOAD %s --> %s>' % (get_timestamp(), url, filename)
-        sysstr = platform.system()
+        print '<%s DOWNLOAD %s --> %s>... ' % (get_timestamp(), url, filename)
         if sysstr == 'Linux':
             try:
-                cmd = "wget %s -O %s" % (url, filename)
+                cmd = "wget %s -O %s -nv" % (url, filename)
                 # retry 10 times, timeout 120s
                 args = '-c -T 120 -t 10'
                 # quiet
@@ -80,7 +82,7 @@ class Fetch:
                 # cmd = '%s &' % cmd
                 os.system(cmd)
             except:
-                print 'failed...'
+                print 'failed'
                 traceback.print_exc()
         elif sysstr == 'Windows':
             print 'not support'
@@ -88,7 +90,6 @@ class Fetch:
             print 'not support'
 
     def copyall(self, src, dst):
-        sysstr = platform.system()
         if sysstr == 'Linux':
             os.system('cp -a %s/* %s/' % (src, dst))
         elif sysstr == 'Windows':
@@ -157,7 +158,12 @@ class Spider(Processor):
 
     def download(self, url, filename):
         Persist.ensurePath(filename)
-        self.fetch.retrieveFile(url, filename)
+        if sysstr == 'Linux':
+            self.fetch.wget(url, filename)
+        elif sysstr == 'Windows':
+            self.fetch.retrieveFile(url, filename)
+        else:
+            print 'not download %s' % url
 
 class Persist():
     def __init__(self, filename, charset='utf-8'):
