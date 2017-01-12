@@ -1,6 +1,6 @@
 __author__ = 'vin@misday.com'
 
-import os, sys, urllib, codecs, traceback, platform
+import os, sys, urllib, codecs, traceback, platform, re
 import urllib2
 from datetime import *
 from pyvin.core import Processor
@@ -131,7 +131,7 @@ class Spider(Processor):
 
     def _dispatch(self, url, response):
         for u in self.callbacks.keys():
-            if url.startswith(u): # TODO: replace with regular expression
+            if re.match(u, url, flags=0): #url.startswith(u): # TODO: replace with regular expression
                 self.callbacks[u](url, response)
 
     def set_proxy(self, server, usr='', passwd=''):
