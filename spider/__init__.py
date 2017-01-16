@@ -1,7 +1,6 @@
 __author__ = 'vin@misday.com'
 
-import os, sys, urllib, codecs, traceback, platform, re
-import urllib2
+import os, sys, urllib, urllib2, codecs, traceback, platform, re, threading
 from datetime import *
 from pyvin.core import Processor
 import bs4
@@ -101,7 +100,7 @@ class Spider(Processor):
     callbacks = {}
 
     def __init__(self, name='Spider'):
-        Processor.__init__(self)
+        Processor.__init__(self, interval=1)
         self.bind(Processor.EVT_START, self.onStart)
         self.bind(Processor.EVT_LOOP, self.onLoop)
         self.bind(Processor.EVT_STOP, self.onStop)
@@ -109,18 +108,38 @@ class Spider(Processor):
         self.name = name
         self.fetch = Fetch()
 
+        # will run how many thread, default is 1.
+        self.thread_count_max = 2
+        self.thread_count = 0
+
+        self.lock = threading.Lock()
+
+    def set_max_thread(self, count):
+        self.thread_count_max = count
+
+    def set_proxy(self, server, usr='', passwd=''):
+        '''set proxy'''
+        self.fetch.set_proxy(server, usr, passwd)
+
     def onStart(self, event):
         print '[%s] starting...' % self.name
         return True
 
     def onLoop(self, event):
-        if len(self.todo) > 0:
-            url = self.todo.pop(0)
-
-            response = self.fetch.get(url)
-            self._dispatch(url, response)
-
-            self.vist.append(url)
+        count = self.url_count()
+        if count > 0:
+            # print 'url_count %d' % count
+            if self.thread_count < self.thread_count_max: # there is
+                url = self.pop_url()
+                if url:
+                    # print url
+                    t = threading.Thread(target=self.processing, args=(url,))
+                    t.start()
+                    self.thead_count_increase()
+            else:
+                pass
+            return True
+        elif self.thread_count > 0: # waiting running thread
             return True
         else:
             return False
@@ -129,24 +148,68 @@ class Spider(Processor):
         print '[%s] stopping...' % self.name
         return True
 
+    def processing(self, args):
+        # print args
+        url = args
+
+        response = self.fetch.get(url)
+        self._dispatch(url, response)
+
+        self.release_url(url)
+        self.thread_count_decrease()
+
     def _dispatch(self, url, response):
+        '''dispatch fetched content to callbacks'''
         for u in self.callbacks.keys():
             if re.match(u, url, flags=0): #url.startswith(u): # TODO: replace with regular expression
                 self.callbacks[u](url, response)
 
-    def set_proxy(self, server, usr='', passwd=''):
-        self.fetch.set_proxy(server, usr, passwd)
+    def thead_count_increase(self):
+        self.lock.acquire()
+        self.thread_count += 1
+        self.lock.release()
+
+    def thread_count_decrease(self):
+        self.lock.acquire()
+        self.thread_count -= 1
+        self.lock.release()
 
     def add_urls(self, urls):
+        '''add url to queue'''
+        self.lock.acquire()
         if len(urls) > 0:
             for url in urls:
                 if url not in self.todo and url not in self.vist:
                     self.todo.append(url)
+        self.lock.release()
+
+    def pop_url(self):
+        self.lock.acquire()
+        if len(self.todo) > 0:
+            url = self.todo.pop(0)
+        else:
+            url = None
+        self.lock.release()
+        return url
+
+    def release_url(self, url):
+        self.lock.acquire()
+        self.vist.append(url)
+        self.lock.release()
+
+    def url_count(self):
+        self.lock.acquire()
+        count = len(self.todo)
+        self.lock.release()
+        return count
 
     def add_callbacks(self, callbacks={}):
+        '''add callbacks for urls fetched'''
         # print type(callbacks)
         for u in callbacks.keys():
             self.callbacks[u] = callbacks[u]
+
+    ###################################################################################################################
 
     # for content
     def clear_node(self, soup, node, att={}):
