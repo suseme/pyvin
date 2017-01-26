@@ -1,23 +1,26 @@
 __author__ = 'vin@misday.com'
 
-import threading, Queue, time
+import threading, Queue, time, logging
 from .callbacks import Callbacks
-from .log import Log
 
 class Processor(threading.Thread, Callbacks):
-    (EVT_START, EVT_STOP, EVT_LOOP) = range(1, 4)
+    (EVT_START, EVT_STOP, EVT_LOOP, EVT_MAX_NUM) = range(1, 5)
 
-    def __init__(self, name = '', interval = 0):
+    def __init__(self, name = '', interval = 0, log=None):
+        if log:
+            self.log = log
+        else:
+            self.log = logging.getLogger(Processor.__name__)
         threading.Thread.__init__(self)
         if name:
             self.name = name
         Callbacks.__init__(self)
         self.init([Processor.EVT_START, Processor.EVT_STOP, Processor.EVT_LOOP])
         self.interval = interval
-        print '%s init...' % self.name
+        self.log.info('%s init...' % self.name)
 
     def run(self):
-        print '%s start...' % self.name
+        self.log.info('%s start...' % self.name)
         self.running = True
 
         willLoop = self.dispatch(Processor.EVT_START)
@@ -27,7 +30,7 @@ class Processor(threading.Thread, Callbacks):
                 time.sleep(self.interval)
 
         self.dispatch(Processor.EVT_STOP) # self.handler.onStop()
-        print '%s stop...' % self.name
+        self.log.info('%s stop...' % self.name)
 
     def stop(self):
         # print 'stopping %s ...' % self.name
